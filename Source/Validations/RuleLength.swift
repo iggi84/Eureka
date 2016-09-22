@@ -1,4 +1,4 @@
-//  ImagePickerController.swift
+//  RuleLength.swift
 //  Eureka ( https://github.com/xmartlabs/Eureka )
 //
 //  Copyright (c) 2016 Xmartlabs SRL ( http://xmartlabs.com )
@@ -24,28 +24,39 @@
 
 import Foundation
 
-/// Selector Controller used to pick an image
-open class ImagePickerController : UIImagePickerController, TypedRowControllerType, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+
+public struct RuleMinLength: RuleType {
     
-    /// The row that pushed or presented this controller
-    public var row: RowOf<UIImage>!
+    let min: UInt
     
-    /// A closure to be called when the controller disappears.
-    public var onDismissCallback : ((UIViewController) -> ())?
+    public var id: String?
+    public var validationError: ValidationError
     
-    open override func viewDidLoad() {
-        super.viewDidLoad()
-        delegate = self
+    public init(minLength: UInt){
+        min = minLength
+        validationError = ValidationError(msg: "Field value must have at least \(min) characters")
     }
     
-    open func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
-        (row as? ImageRow)?.imageURL = info[UIImagePickerControllerReferenceURL] as? URL
-        row.value = info[UIImagePickerControllerOriginalImage] as? UIImage
-        onDismissCallback?(self)
-    }
-    
-    open func imagePickerControllerDidCancel(_ picker: UIImagePickerController){
-        onDismissCallback?(self)
+    public func isValid(value: String?) -> ValidationError? {
+        guard let value = value, value.characters.count >= Int(min) else { return validationError }
+        return nil
     }
 }
 
+public struct RuleMaxLength: RuleType {
+    
+    let max: UInt
+    
+    public var id: String?
+    public var validationError: ValidationError
+    
+    public init(maxLength: UInt){
+        max = maxLength
+        validationError = ValidationError(msg: "Field value must have less than \(max) characters")
+    }
+    
+    public func isValid(value: String?) -> ValidationError? {
+        guard let value = value , value.characters.count <= Int(max) else { return validationError }
+        return nil
+    }
+}

@@ -1,4 +1,4 @@
-//  ImagePickerController.swift
+//  RegexRule.swift
 //  Eureka ( https://github.com/xmartlabs/Eureka )
 //
 //  Copyright (c) 2016 Xmartlabs SRL ( http://xmartlabs.com )
@@ -24,28 +24,29 @@
 
 import Foundation
 
-/// Selector Controller used to pick an image
-open class ImagePickerController : UIImagePickerController, TypedRowControllerType, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
-    
-    /// The row that pushed or presented this controller
-    public var row: RowOf<UIImage>!
-    
-    /// A closure to be called when the controller disappears.
-    public var onDismissCallback : ((UIViewController) -> ())?
-    
-    open override func viewDidLoad() {
-        super.viewDidLoad()
-        delegate = self
-    }
-    
-    open func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
-        (row as? ImageRow)?.imageURL = info[UIImagePickerControllerReferenceURL] as? URL
-        row.value = info[UIImagePickerControllerOriginalImage] as? UIImage
-        onDismissCallback?(self)
-    }
-    
-    open func imagePickerControllerDidCancel(_ picker: UIImagePickerController){
-        onDismissCallback?(self)
-    }
+public enum RegExprPattern: String {
+    case EmailAddress = "^[_A-Za-z0-9-+]+(\\.[_A-Za-z0-9-+]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*(\\.[A-Za-z‌​]{2,})$"
+    case URL = "((https|http)://)((\\w|-)+)(([.]|[/])((\\w|-)+))+"
+    case ContainsNumber = ".*\\d.*"
+    case ContainsCapital = "^.*?[A-Z].*?$"
+    case ContainsLowercase = "^.*?[a-z].*?$"
 }
 
+public class RuleRegExp: RuleType {
+
+    public var regExpr: String = ""
+    public var id: String?
+    public var validationError = ValidationError(msg: "Invalid field value!")
+    
+    public init(regExpr: String){
+        self.regExpr = regExpr
+    }
+    
+    public func isValid(value: String?) -> ValidationError? {
+        let predicate = NSPredicate(format: "SELF MATCHES %@", regExpr)
+        guard predicate.evaluate(with: value) else {
+            return validationError
+        }
+        return nil
+    }
+}

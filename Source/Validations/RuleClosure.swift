@@ -1,4 +1,4 @@
-//  ImagePickerController.swift
+//  RuleClosure.swift
 //  Eureka ( https://github.com/xmartlabs/Eureka )
 //
 //  Copyright (c) 2016 Xmartlabs SRL ( http://xmartlabs.com )
@@ -24,28 +24,20 @@
 
 import Foundation
 
-/// Selector Controller used to pick an image
-open class ImagePickerController : UIImagePickerController, TypedRowControllerType, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+
+public struct RuleClosure<T: Equatable>: RuleType {
     
-    /// The row that pushed or presented this controller
-    public var row: RowOf<UIImage>!
+    public var id: String?
+    public var validationError: ValidationError
     
-    /// A closure to be called when the controller disappears.
-    public var onDismissCallback : ((UIViewController) -> ())?
-    
-    open override func viewDidLoad() {
-        super.viewDidLoad()
-        delegate = self
+    public var closure: (T?) -> ValidationError?
+
+    public func isValid(value: T?) -> ValidationError? {
+        return closure(value)
     }
     
-    open func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
-        (row as? ImageRow)?.imageURL = info[UIImagePickerControllerReferenceURL] as? URL
-        row.value = info[UIImagePickerControllerOriginalImage] as? UIImage
-        onDismissCallback?(self)
-    }
-    
-    open func imagePickerControllerDidCancel(_ picker: UIImagePickerController){
-        onDismissCallback?(self)
+    public init(validationError: ValidationError = ValidationError(msg: "Field validation fails.."), closure: @escaping ((T?) -> ValidationError?)) {
+        self.validationError = validationError
+        self.closure = closure
     }
 }
-

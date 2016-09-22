@@ -1,4 +1,4 @@
-//  ImagePickerController.swift
+//  RuleURL.swift
 //  Eureka ( https://github.com/xmartlabs/Eureka )
 //
 //  Copyright (c) 2016 Xmartlabs SRL ( http://xmartlabs.com )
@@ -23,29 +23,21 @@
 // THE SOFTWARE.
 
 import Foundation
+import UIKit
 
-/// Selector Controller used to pick an image
-open class ImagePickerController : UIImagePickerController, TypedRowControllerType, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+public struct RuleURL: RuleType {
     
-    /// The row that pushed or presented this controller
-    public var row: RowOf<UIImage>!
+    public init() {}
     
-    /// A closure to be called when the controller disappears.
-    public var onDismissCallback : ((UIViewController) -> ())?
+    public var id: String?
+    public var validationError = ValidationError(msg: "Field value must be an URL!")
     
-    open override func viewDidLoad() {
-        super.viewDidLoad()
-        delegate = self
-    }
-    
-    open func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
-        (row as? ImageRow)?.imageURL = info[UIImagePickerControllerReferenceURL] as? URL
-        row.value = info[UIImagePickerControllerOriginalImage] as? UIImage
-        onDismissCallback?(self)
-    }
-    
-    open func imagePickerControllerDidCancel(_ picker: UIImagePickerController){
-        onDismissCallback?(self)
+    public func isValid(value: URL?) -> ValidationError? {
+        guard let value = value else  { return validationError }
+        let predicate = NSPredicate(format:"SELF MATCHES %@", RegExprPattern.URL.rawValue)
+        guard predicate.evaluate(with: value.absoluteString) else {
+            return validationError
+        }
+        return nil
     }
 }
-
