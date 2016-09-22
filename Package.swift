@@ -1,5 +1,6 @@
 import PackageDescription
 
 let package = Package(
-    name: "Eureka"
+    name: "Eureka",
+    exclude: ["Source/Resources"]
 )
